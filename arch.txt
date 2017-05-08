@@ -1,0 +1,42 @@
+Bottom-up with 3 modules:
+
+i) a solver for the output layer:
+
+Given Z:KN, Y:LN, solve V:LK,
+
+min_{V}  L(VZ,Y) + \frac{1}{2}\|V\|_F^2
+-------------------------------------------------------------------------------------
+
+ii) a solver for the input layer:
+
+Given X:DN, Z:KN, solve W:KD,
+
+min_{W}  L(WX,Z) + \frac{1}{2}\|W\|_F^2
+
+or solve A:KN in the dual: (D is diag(c))
+
+argmax_{A\in[-1,1]^NK}  N*tr(D) + tr(A'DZ) - 0.5*tr(Z'DZX'X) + tr(AX'XZ'D) - 0.5*tr(A'DAX'X).
+
+= argmin_{A\in[-1,1]^NK} 0.5*tr((Z-A)'D(Z-A)X'X) - tr(A'DZ)
+
+Solve a_1,...,a_K independently:  
+
+argmin_{a\in [-1,1]^N}  0.5* (z-a)'(X'X)(z-a) - z'a
+
+
+-------------------------------------------------------------------------------------
+
+iii) a SDP-based Max-Cut solver for: (A=Z*Omega, Omega=Z_S'*Ah_S)
+
+max_{z}  z'Cz   
+
+where  C = -N*I - Omega + 0.5*X*X' - X'X*Omega' + 0.5*Omega*X'X*Omega
+
+
+iv) Finally, an outer loop, which for iteration do:
+
+	Step 1: Evaluate gradient by solving (i) and (ii).
+	
+	Step 2: Generate a neuron z, adding to active set S.
+	
+	Step 3: Adjust c_S using prox-GD.
